@@ -1,0 +1,80 @@
+C51 COMPILER V9.52.0.0   MOTOR                                                             03/23/2022 08:31:36 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MOTOR
+OBJECT MODULE PLACED IN motor.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE motor.c BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "reg52.h"
+   2          
+   3          sbit RightCon1A = P3^7;
+   4          sbit RightCon1B = P3^3;
+   5          
+   6          sbit LeftCon1A = P3^4;
+   7          sbit LeftCon1B = P3^5;
+   8          
+   9          void goForward()
+  10          {
+  11   1        LeftCon1A = 0;
+  12   1        LeftCon1B = 1;
+  13   1        
+  14   1        RightCon1A = 0;
+  15   1        RightCon1B = 1;
+  16   1      }
+  17          
+  18          void goRight()
+  19          {
+  20   1        LeftCon1A = 0;
+  21   1        LeftCon1B = 1;
+  22   1        
+  23   1        RightCon1A = 0;
+  24   1        RightCon1B = 0;
+  25   1      }
+  26          
+  27          
+  28          void goLeft()
+  29          {
+  30   1        LeftCon1A = 0;
+  31   1        LeftCon1B = 0;
+  32   1        
+  33   1        RightCon1A = 0;
+  34   1        RightCon1B = 1;
+  35   1      }
+  36          
+  37          void goBack()
+  38          {
+  39   1        LeftCon1A = 1;
+  40   1        LeftCon1B = 0;
+  41   1        
+  42   1        RightCon1A = 1;
+  43   1        RightCon1B = 0;
+  44   1      }
+  45          
+  46          void stop()
+  47          {
+  48   1        LeftCon1A = 0;
+  49   1        LeftCon1B = 0;
+  50   1        
+  51   1        RightCon1A = 0;
+  52   1        RightCon1B = 0;
+  53   1      }
+  54          
+  55          
+C51 COMPILER V9.52.0.0   MOTOR                                                             03/23/2022 08:31:36 PAGE 2   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     45    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

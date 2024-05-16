@@ -1,0 +1,9 @@
+void goLeft();
+void goRight();
+void goForward();
+void goBack();
+void Stop();
+void leftGoForward();
+void leftStop();
+void rightGoForward();
+void rightStop();

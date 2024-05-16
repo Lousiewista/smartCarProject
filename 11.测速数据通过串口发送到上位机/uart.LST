@@ -1,0 +1,128 @@
+C51 COMPILER V9.52.0.0   UART                                                              03/14/2024 21:19:33 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN uart.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE uart.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "motor.h"
+   3          #include "string.h"
+   4          #define SIZE 12
+   5          
+   6          sfr AUXR = 0x8E;
+   7          
+   8          char buffer[SIZE];
+   9          
+  10          
+  11          void UartInit(void)
+  12          {
+  13   1          AUXR = 0x01;
+  14   1          SCON = 0x50; //配置串口工作方式1：REN能接受
+  15   1          TMOD &= 0xF0;
+  16   1          TMOD |= 0x20;//定时器1工作方式8位自动重装
+  17   1          
+  18   1          TH1 = 0xFD;// 
+  19   1          TL1 = 0xFD;//9600波特率
+  20   1          TR1 = 1;//启动定时器
+  21   1          
+  22   1          EA = 1;//开启总中断
+  23   1          ES = 1;//开启串口中断
+  24   1          
+  25   1      }
+  26          
+  27          
+  28          
+  29          
+  30          
+  31          void SendByte (char mydata)
+  32          {
+  33   1          SBUF = mydata;
+  34   1          while(!TI);
+  35   1          TI = 0;
+  36   1      
+  37   1      }
+  38          
+  39          
+  40          void sendString(char* str)
+  41          {
+  42   1          while (*str != '\0') {
+  43   2              SendByte(*str);
+  44   2              str++;          
+  45   2          }
+  46   1      
+  47   1      }
+  48          
+  49          
+  50          
+  51          
+  52          //M1前 M2后 M3左 M4右
+  53          void Uart_Handler() interrupt 4
+  54          
+  55          {
+C51 COMPILER V9.52.0.0   UART                                                              03/14/2024 21:19:33 PAGE 2   
+
+  56   1          static int i = 0;//static 静态变量，被初始化一次，
+  57   1          //在这个函数内相当与全局变量的作用，不会反复被执行初始化，区别是只能�
+             -��这个函数内被调用
+  58   1          char tmp;
+  59   1          
+  60   1          if (RI) {   //中断处理函数中，对于接收中断的响应
+  61   2              RI = 0;//清除接收中断标志
+  62   2              
+  63   2              tmp = SBUF;
+  64   2              if (tmp == 'M') {
+  65   3                  i = 0;
+  66   3              }
+  67   2              buffer[i++] = tmp;
+  68   2               
+  69   2      
+  70   2      
+  71   2              if (buffer[0] == 'M') {
+  72   3                  switch(buffer[1]) {
+  73   4                      case '1':
+  74   4                          goForward();
+  75   4                          break;
+  76   4                      case '2':
+  77   4                          goBack();
+  78   4                          break;
+  79   4                      case '3':
+  80   4                          goLeft();
+  81   4                          break;
+  82   4                      case '4':
+  83   4                          goRight();
+  84   4                          break;
+  85   4                      default:
+  86   4                          Stop();
+  87   4                          break;
+  88   4      
+  89   4                  }
+  90   3                  
+  91   3              }
+  92   2              
+  93   2      
+  94   2          }
+  95   1              if (i == 12) {
+  96   2                  memset(buffer, '\0', SIZE);
+  97   2                  i = 0;
+  98   2              }
+  99   1                  
+ 100   1      } 
+ 101              
+ 102          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    208    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     14    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

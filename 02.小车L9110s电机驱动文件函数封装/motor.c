@@ -1,0 +1,49 @@
+#include "reg52.h"
+
+sbit RightConlA = P3^2;
+sbit RightConlB = P3^3;
+
+sbit LeftConlA = P3^4;
+sbit LeftConlB = P3^5;
+
+void goLeft()
+{
+    LeftConlA = 0;
+    LeftConlB = 0;
+    
+    RightConlA = 0;
+    RightConlB = 1;
+
+}
+
+
+void goRight()
+{
+    LeftConlA = 0;
+    LeftConlB = 1;
+    
+    RightConlA = 0;
+    RightConlB = 0;
+
+}
+
+
+
+void goForward()
+{
+    LeftConlA = 0;
+    LeftConlB = 1;
+    
+    RightConlA = 0;
+    RightConlB = 1;
+
+}
+
+void goBack()
+{
+    LeftConlA = 1;
+    LeftConlB = 0;
+    
+    RightConlA = 1;
+    RightConlB = 0;
+}

@@ -1,0 +1,115 @@
+C51 COMPILER V9.52.0.0   SG90                                                              03/14/2024 11:29:45 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE SG90
+OBJECT MODULE PLACED IN sg90.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE sg90.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "delay.h"
+   3          
+   4          sbit D5 = P3^7;
+   5          sbit D6 = P3^6;
+   6          sbit sg90_con = P1^1;
+   7          
+   8          int angle;
+   9          int cnt = 0;
+  10          
+  11          
+  12          void Time0Init()
+  13          {
+  14   1      //1.配置定时器0工作模式为16位计时
+  15   1          TMOD &= 0xF0; //设定定时器模式
+  16   1          TMOD |= 0X01;
+  17   1          //2.给初值，定一个10ms出来
+  18   1          TL0 = 0x33;
+  19   1          TH0 = 0XFE;
+  20   1          //3.开始计时；
+  21   1          TR0 = 1;
+  22   1          TF0 = 0;
+  23   1          //4.打开定时器1中断
+  24   1          ET0 = 1;
+  25   1          //5.打开总中断EA
+  26   1          EA = 1;
+  27   1      }
+  28          
+  29          
+  30          
+  31          
+  32          //void openStatusLight()
+  33          //{
+  34          //    D5 = 0;
+  35          //    D6 = 1;
+  36          //}
+  37          
+  38          //void closeStatusLight()
+  39          //{
+  40          //    D5 = 1;
+  41          //    D6 = 0;
+  42          //}
+  43          
+  44          
+  45          
+  46          
+  47          void sgMiddle()
+  48          {
+  49   1          angle = 3; //4 = 135度 2.0ms高电平  3 = 90度 5 = 180度
+  50   1          cnt = 0;
+  51   1          Delay2000ms();
+  52   1      }
+  53          
+  54          void sgRight()
+  55          {
+C51 COMPILER V9.52.0.0   SG90                                                              03/14/2024 11:29:45 PAGE 2   
+
+  56   1          angle = 1;
+  57   1          cnt = 0;
+  58   1          Delay150ms();
+  59   1      }
+  60          
+  61          void sgLeft()
+  62          {
+  63   1          angle = 5;
+  64   1          cnt = 0;
+  65   1          Delay150ms();
+  66   1      }
+  67          
+  68          
+  69          void Time0Handler() interrupt 1
+  70          {
+  71   1          
+  72   1          cnt++; //统计爆表的次数  cnt=1的时候，爆表1
+  73   1          
+  74   1          //重新给初值
+  75   1          TL0 = 0x33;
+  76   1          TH0 = 0XFE;//重新给初值
+  77   1          
+  78   1          //控制PWM波
+  79   1          if (cnt < angle) {
+  80   2              sg90_con = 1;
+  81   2          }else {
+  82   2              sg90_con = 0;
+  83   2          }
+  84   1          
+  85   1          if (cnt == 40) {
+  86   2              cnt = 0;//当100次表示1s,重新让cnt从0开始，计算下一次的1s
+  87   2              sg90_con = 1;
+  88   2          }    
+  89   1          
+  90   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    130    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

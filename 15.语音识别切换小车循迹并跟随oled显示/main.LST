@@ -1,0 +1,219 @@
+C51 COMPILER V9.52.0.0   MAIN                                                              03/15/2024 22:04:34 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "intrins.h"
+   3          #include "hc04.h"
+   4          #include "delay.h"
+   5          #include "sg90.h"
+   6          #include "OLED.h"
+   7          #include "motor.h"
+   8          #include "time.h"
+   9          
+  10          #define MIDDLE  0
+  11          #define LEFT    1
+  12          #define RIGHT   2
+  13          
+  14          #define BZ 1
+  15          #define XJ 2
+  16          #define GS 3
+  17          
+  18          
+  19          
+  20          sbit A25 = P1^5;
+  21          sbit A26 = P1^6;
+  22          sbit A27 = P1^7;
+  23          
+  24          sbit leftSensorX = P2^7;
+  25          sbit rightSensorX = P2^6;
+  26          
+  27          sbit leftSensorG = P2^5;
+  28          sbit rightSensorG = P2^4;
+  29          
+  30          char dir;
+  31          
+  32          double disMiddle;
+  33          double disLeft;
+  34          double disRight;
+  35          
+  36          void xunjiMode()
+  37          {
+  38   1                      if(leftSensorX == 0 && rightSensorX == 0){
+  39   2                              goForward();
+  40   2                      }
+  41   1                      if(leftSensorX == 1 && rightSensorX == 0){
+  42   2                              goLeft();
+  43   2                      }
+  44   1                      
+  45   1                      if(leftSensorX == 0 && rightSensorX == 1){
+  46   2                              goRight();
+  47   2                      }
+  48   1                      
+  49   1                      if(leftSensorX == 1 && rightSensorX == 1){
+  50   2                              //停
+  51   2                              Stop();
+  52   2                      }
+  53   1          
+  54   1      
+  55   1      }
+C51 COMPILER V9.52.0.0   MAIN                                                              03/15/2024 22:04:34 PAGE 2   
+
+  56          
+  57          
+  58          void gensuiMode()
+  59          {
+  60   1              if (leftSensorG == 0 && rightSensorG == 0) {
+  61   2                  goForward();
+  62   2              
+  63   2              }
+  64   1      
+  65   1              if (leftSensorG == 1 && rightSensorG == 0) {
+  66   2                  goRight();
+  67   2              }
+  68   1              
+  69   1              if (leftSensorG == 0 && rightSensorG == 1) {
+  70   2                  goLeft();
+  71   2              }       
+  72   1              
+  73   1              if (leftSensorG == 1 && rightSensorG == 1) {
+  74   2                  Stop(); 
+  75   2              } 
+  76   1      
+  77   1      }
+  78          
+  79          
+  80          
+  81          void bizhangMode()
+  82          {
+  83   1              if (dir != MIDDLE) {
+  84   2                  sgMiddle();
+  85   2                  dir = MIDDLE;
+  86   2                  Delay150ms();
+  87   2                              
+  88   2              }
+  89   1                      
+  90   1              disMiddle = get_distance();
+  91   1              
+  92   1              if (disMiddle > 35) {
+  93   2                  goForward();
+  94   2                  
+  95   2              } else if (disMiddle < 10) {
+  96   2                  goBack();
+  97   2              
+  98   2                  
+  99   2              } else {
+ 100   2                  Stop();
+ 101   2                  sgLeft();
+ 102   2                  Delay150ms();
+ 103   2                  
+ 104   2                  disLeft = get_distance();
+ 105   2                  
+ 106   2                  sgMiddle();
+ 107   2                  Delay150ms();
+ 108   2                  
+ 109   2                  
+ 110   2                  sgRight();
+ 111   2                  dir = RIGHT;
+ 112   2                  Delay150ms();
+ 113   2                  
+ 114   2                  disRight = get_distance();
+ 115   2      
+ 116   2                  if (disLeft < disRight) {
+ 117   3                      goRight();
+C51 COMPILER V9.52.0.0   MAIN                                                              03/15/2024 22:04:34 PAGE 3   
+
+ 118   3                      Delay150ms();
+ 119   3                      Stop();
+ 120   3                  }
+ 121   2      
+ 122   2                  
+ 123   2                  if (disRight < disLeft) {
+ 124   3                      goLeft();
+ 125   3                      Delay150ms();
+ 126   3                      Stop();
+ 127   3                  }
+ 128   2                  
+ 129   2                                          
+ 130   2              } 
+ 131   1      
+ 132   1      }
+ 133          
+ 134          
+ 135          
+ 136          void main(void)
+ 137          {
+ 138   1              int mark = 0;
+ 139   1              
+ 140   1              Time0Init();
+ 141   1              Time1Init();
+ 142   1              //舵机的初始位置
+ 143   1      
+ 144   1              sgMiddle();
+ 145   1              Delay150ms();   
+ 146   1          Delay150ms();       
+ 147   1          Delay150ms();       
+ 148   1          Delay150ms();       
+ 149   1              dir = MIDDLE;
+ 150   1              
+ 151   1              Oled_Init();
+ 152   1              Oled_Clear();
+ 153   1              Oled_Show_Str(2,2,"-----Ready----");
+ 154   1          
+ 155   1      
+ 156   1          while (1) {
+ 157   2              //满足循迹模式的条件
+ 158   2              if (A25 == 1 && A26 == 1 && A27 == 0) {
+ 159   3                              if(mark != XJ){
+ 160   4                                      Oled_Clear();
+ 161   4                                      Oled_Show_Str(2,2,"-----XunJi----");
+ 162   4                              }
+ 163   3                              mark = XJ;
+ 164   3                              xunjiMode();
+ 165   3                      }
+ 166   2              //满足跟随模式的条件
+ 167   2                      if(A25 == 1 && A26 == 1 && A27 == 0){
+ 168   3                              if(mark != GS){
+ 169   4                                      Oled_Clear();
+ 170   4                                      Oled_Show_Str(2,2,"-----GenSui----");
+ 171   4                              }
+ 172   3                              mark = GS;
+ 173   3                              gensuiMode();
+ 174   3                      }       
+ 175   2              //满足避障模式的条件
+ 176   2              if (A25 == 1 && A26 == 0 && A27 == 1) {
+ 177   3                              if(mark != BZ){
+ 178   4                                      Oled_Clear();
+ 179   4                                      Oled_Show_Str(2,2,"-----BiZhang----");
+C51 COMPILER V9.52.0.0   MAIN                                                              03/15/2024 22:04:34 PAGE 4   
+
+ 180   4                              }
+ 181   3                              mark = BZ;
+ 182   3                              bizhangMode();
+ 183   3                      }
+ 184   2              
+ 185   2              
+ 186   2          }
+ 187   1      }
+ 188          
+ 189          
+ 190          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    421    ----
+   CONSTANT SIZE    =     63    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     13       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

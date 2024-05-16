@@ -1,0 +1,79 @@
+C51 COMPILER V9.52.0.0   MAIN                                                              03/14/2024 21:19:32 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "motor.h"
+   3          #include "delay.h"
+   4          #include "uart.h"
+   5          #include "time.h"
+   6          #include "stdio.h"
+   7          #include "string.h"
+   8          
+   9          sbit speedIO = P3^2;//外部中断0
+  10          unsigned int speedCnt = 0;
+  11          
+  12          extern unsigned int speed;
+  13          extern char signal;
+  14          
+  15          char speedMessage[24];
+  16          
+  17          void Ex0Init()
+  18          {
+  19   1          EX0 = 1;//允许中断
+  20   1          //EA = 1; //在串口初始化函数中已经打开了总中断
+  21   1          IT0 = 1; //外部中断的下降沿触发
+  22   1          
+  23   1          
+  24   1      }
+  25          
+  26          
+  27          void main(void)
+  28          {
+  29   1          Time0Init();
+  30   1          
+  31   1          UartInit();//串口相关初始化
+  32   1          
+  33   1          Ex0Init();//外部中断初始化
+  34   1          
+  35   1          
+  36   1          
+  37   1          while (1) {
+  38   2              if (signal) {
+  39   3                  sprintf(speedMessage,"speed:%d\r\n",speed);
+  40   3                  sendString(speedMessage);
+  41   3                  memset(speedMessage,'\0',24);
+  42   3                  
+  43   3                  signal = 0;
+  44   3                  
+  45   3              }
+  46   2          }
+  47   1      
+  48   1      }
+  49          
+  50          void speedHandler() interrupt 0
+  51          {
+  52   1          speedCnt++;
+  53   1      
+  54   1      }
+
+C51 COMPILER V9.52.0.0   MAIN                                                              03/14/2024 21:19:32 PAGE 2   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     84    ----
+   CONSTANT SIZE    =     11    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     26    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,92 @@
+C51 COMPILER V9.52.0.0   SG90                                                              03/20/2022 19:37:52 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE SG90
+OBJECT MODULE PLACED IN sg90.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE sg90.c BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "delay.h"
+   3          
+   4          sbit sg90_con = P1^1;
+   5          
+   6          int jd;
+   7          int cnt = 0;
+   8          
+   9          void Time0Init()
+  10          {
+  11   1        //1. 配置定时器0工作模式位16位计时
+  12   1        TMOD &= 0xF0;   //设置定时器模式
+  13   1        TMOD |= 0x01;
+  14   1        //2. 给初值，定一个0.5出来
+  15   1        TL0=0x33;
+  16   1        TH0=0xFE;
+  17   1        //3. 开始计时
+  18   1        TR0 = 1;
+  19   1        TF0 = 0;
+  20   1        //4. 打开定时器0中断
+  21   1        ET0 = 1;
+  22   1        //5. 打开总中断EA
+  23   1        EA = 1;
+  24   1      }
+  25          
+  26          void sgMiddle()
+  27          {
+  28   1        //中间位置
+  29   1        jd = 3; //90度 1.5ms高电平
+  30   1        cnt = 0;
+  31   1      }
+  32          
+  33          void sgLeft()
+  34          {
+  35   1        //左边位置
+  36   1        jd = 5; //135度 1.5ms高电平
+  37   1        cnt = 0;
+  38   1      }
+  39          
+  40          void sgRight()
+  41          {
+  42   1        //右边位置
+  43   1        jd = 1; //0度
+  44   1        cnt = 0;
+  45   1      }
+  46          
+  47          
+  48          void Time0Handler() interrupt 1
+  49          {
+  50   1        cnt++;  //统计爆表的次数. cnt=1的时候，报表了1
+  51   1        //重新给初值
+  52   1        TL0=0x33;
+  53   1        TH0=0xFE;
+  54   1        
+  55   1        //控制PWM波
+C51 COMPILER V9.52.0.0   SG90                                                              03/20/2022 19:37:52 PAGE 2   
+
+  56   1        if(cnt < jd){
+  57   2          sg90_con = 1;
+  58   2        }else{
+  59   2          sg90_con = 0;
+  60   2        }
+  61   1        
+  62   1        if(cnt == 40){//爆表40次，经过了20ms
+  63   2          cnt = 0;  //当100次表示1s，重新让cnt从0开始，计算下一次的1s
+  64   2          sg90_con = 1;
+  65   2        }
+  66   1          
+  67   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    124    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

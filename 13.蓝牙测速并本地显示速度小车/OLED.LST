@@ -1,0 +1,235 @@
+C51 COMPILER V9.52.0.0   OLED                                                              03/15/2024 14:42:13 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE OLED
+OBJECT MODULE PLACED IN OLED.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE OLED.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "intrins.h"
+   3          #include "Oledfont.h"
+   4          
+   5          sbit scl = P1^2;
+   6          sbit sda = P1^3;
+   7          
+   8          
+   9          
+  10          void IIC_Start()
+  11          {
+  12   1          scl = 0;//防止雪花
+  13   1          sda = 1;
+  14   1          scl = 1;
+  15   1          _nop_();//一个_nop_()一般就是5μs（微秒）的时间
+  16   1          sda = 0;
+  17   1          _nop_();
+  18   1      }
+  19          
+  20          
+  21          
+  22          
+  23          
+  24          
+  25          void IIC_Stop()
+  26          {
+  27   1          scl = 0;//防止雪花
+  28   1          sda = 0;
+  29   1          scl = 1;
+  30   1          _nop_();
+  31   1          sda = 1;
+  32   1          _nop_();
+  33   1      
+  34   1      }
+  35          
+  36          char IIC_ACK()
+  37          {
+  38   1          char flag;
+  39   1          sda = 1;//在时钟脉冲9期间释放数据线
+  40   1          _nop_();
+  41   1          scl = 1;
+  42   1          _nop_();
+  43   1          flag = sda;
+  44   1          _nop_();
+  45   1          scl = 0;
+  46   1          _nop_();
+  47   1          
+  48   1          return flag;
+  49   1      
+  50   1      
+  51   1      }
+  52          
+  53          void IIC_Send_Byte(char dataSend)
+  54          {
+  55   1          int i;
+C51 COMPILER V9.52.0.0   OLED                                                              03/15/2024 14:42:13 PAGE 2   
+
+  56   1          
+  57   1          for (i = 0;i<8;i++) {
+  58   2              scl = 0;//scl拉低，让sda做好数据准备
+  59   2              sda = dataSend & 0x80;//1000 0000获得dataSend的最高位，给sda
+  60   2              _nop_();//发送数据建立时间
+  61   2              scl = 1;//scl拉高开始发送
+  62   2              _nop_();//数据发送时间
+  63   2              scl = 0;//发送完毕拉低
+  64   2              _nop_();
+  65   2              dataSend <<= 1;
+  66   2           
+  67   2          }
+  68   1      }
+  69          
+  70          
+  71          void Oled_Write_Cmd(char dataCmd)
+  72          {
+  73   1          //1.start()
+  74   1          IIC_Start();
+  75   1          //2.写入从机地址 b0111 1000 0x78
+  76   1          IIC_Send_Byte(0x78);
+  77   1          //3.ACK
+  78   1          IIC_ACK();
+  79   1          //4.cotrol byte：(0)(0)00 0000写入命令 (0)(1)00 0000写入数据
+  80   1          IIC_Send_Byte(0x00);
+  81   1          //5.ACK
+  82   1          IIC_ACK();
+  83   1          //6.写入指令/数据
+  84   1          IIC_Send_Byte(dataCmd);
+  85   1          //7.ACK
+  86   1          IIC_ACK();
+  87   1          //8.STOP
+  88   1          IIC_Stop();
+  89   1      
+  90   1      }
+  91          
+  92          void Oled_Write_Data(char dataData)
+  93          {
+  94   1      
+  95   1          //1.start()
+  96   1          IIC_Start();
+  97   1          //2.写入从机地址 b0111 1000 0x78
+  98   1          IIC_Send_Byte(0x78);
+  99   1          //3.ACK
+ 100   1          IIC_ACK();
+ 101   1          //4.cotrol byte：(0)(0)00 0000写入命令 (0)(1)00 0000写入数据
+ 102   1          IIC_Send_Byte(0x40);
+ 103   1          //5.ACK
+ 104   1          IIC_ACK();
+ 105   1          //6.写入指令/数据
+ 106   1          IIC_Send_Byte(dataData);
+ 107   1          //7.ACK；
+ 108   1          IIC_ACK();
+ 109   1          //9.STOP
+ 110   1          IIC_Stop();
+ 111   1      
+ 112   1      }
+ 113          
+ 114          
+ 115          void Oled_Init()
+ 116          {
+ 117   1          Oled_Write_Cmd(0xAE);//--display off
+C51 COMPILER V9.52.0.0   OLED                                                              03/15/2024 14:42:13 PAGE 3   
+
+ 118   1          Oled_Write_Cmd(0x00);//---set low column address
+ 119   1          Oled_Write_Cmd(0x10);//---set high column address
+ 120   1          Oled_Write_Cmd(0x40);//--set start line address
+ 121   1          Oled_Write_Cmd(0xB0);//--set page address
+ 122   1          Oled_Write_Cmd(0x81); // contract control
+ 123   1          Oled_Write_Cmd(0xFF);//--128
+ 124   1          Oled_Write_Cmd(0xA1);//set segment remap
+ 125   1          Oled_Write_Cmd(0xA6);//--normal / reverse
+ 126   1          Oled_Write_Cmd(0xA8);//--set multiplex ratio(1 to 64)
+ 127   1          Oled_Write_Cmd(0x3F);//--1/32 duty
+ 128   1          Oled_Write_Cmd(0xC8);//Com scan direction
+ 129   1          Oled_Write_Cmd(0xD3);//-set display offset
+ 130   1          Oled_Write_Cmd(0x00);//
+ 131   1          
+ 132   1          Oled_Write_Cmd(0xD5);//set osc division
+ 133   1          Oled_Write_Cmd(0x80);//
+ 134   1          
+ 135   1          Oled_Write_Cmd(0xD8);//set area color mode off
+ 136   1          Oled_Write_Cmd(0x05);//
+ 137   1          
+ 138   1          Oled_Write_Cmd(0xD9);//Set Pre-Charge Period
+ 139   1          Oled_Write_Cmd(0xF1);//
+ 140   1          
+ 141   1          Oled_Write_Cmd(0xDA);//set com pin configuartion
+ 142   1          Oled_Write_Cmd(0x12);//
+ 143   1          
+ 144   1          Oled_Write_Cmd(0xDB);//set Vcomh
+ 145   1          Oled_Write_Cmd(0x30);//
+ 146   1          
+ 147   1          Oled_Write_Cmd(0x8D);//set charge pump enable
+ 148   1          Oled_Write_Cmd(0x14);//
+ 149   1          
+ 150   1          Oled_Write_Cmd(0xAF);//--turn on oled panel
+ 151   1      }
+ 152          
+ 153          void Oled_Clear()
+ 154          {
+ 155   1          int i,j;
+ 156   1          
+ 157   1          for (i=0;i<8;i++) {
+ 158   2              Oled_Write_Cmd(0xB0 + i);//page0——page7
+ 159   2              //每个page从0列
+ 160   2              Oled_Write_Cmd(0x00);
+ 161   2              Oled_Write_Cmd(0x10);
+ 162   2              //0到127列，依次写入0，每写入数据，列地址自动偏移
+ 163   2              for(j = 0;j<128;j++) {
+ 164   3                  Oled_Write_Data(0);
+ 165   3              }
+ 166   2              
+ 167   2              
+ 168   2          }
+ 169   1      
+ 170   1      
+ 171   1      }
+ 172          
+ 173          
+ 174          void Oled_Show_Char(char row,char col,char oledChar){ //row*2-2
+ 175   1              unsigned int  i;
+ 176   1              Oled_Write_Cmd(0xb0+(row*2-2));                           //page 0
+ 177   1              Oled_Write_Cmd(0x00+(col&0x0f));                          //low
+ 178   1              Oled_Write_Cmd(0x10+(col>>4));                            //high        
+ 179   1              for(i=((oledChar-32)*16);i<((oledChar-32)*16+8);i++){
+C51 COMPILER V9.52.0.0   OLED                                                              03/15/2024 14:42:13 PAGE 4   
+
+ 180   2                      Oled_Write_Data(F8X16[i]);                            //写数据oledTable1
+ 181   2              }
+ 182   1      
+ 183   1              Oled_Write_Cmd(0xb0+(row*2-1));                           //page 1
+ 184   1              Oled_Write_Cmd(0x00+(col&0x0f));                          //low
+ 185   1              Oled_Write_Cmd(0x10+(col>>4));                            //high
+ 186   1              for(i=((oledChar-32)*16+8);i<((oledChar-32)*16+8+8);i++){
+ 187   2                      Oled_Write_Data(F8X16[i]);                            //写数据oledTable1
+ 188   2              }               
+ 189   1      }
+ 190          
+ 191          
+ 192          /******************************************************************************/
+ 193          // 函数名称：Oled_Show_Char 
+ 194          // 输入参数：oledChar 
+ 195          // 输出参数：无 
+ 196          // 函数功能：OLED显示单个字符
+ 197          /******************************************************************************/
+ 198          void Oled_Show_Str(char row,char col,char *str){
+ 199   1              while(*str!=0){
+ 200   2                      Oled_Show_Char(row,col,*str);
+ 201   2                      str++;
+ 202   2                      col += 8;       
+ 203   2              }               
+ 204   1      }
+ 205          
+ 206          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    573    ----
+   CONSTANT SIZE    =   1520    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       7
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

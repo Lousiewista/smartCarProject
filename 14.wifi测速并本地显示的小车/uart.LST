@@ -1,0 +1,143 @@
+C51 COMPILER V9.52.0.0   UART                                                              03/15/2024 16:51:11 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN uart.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE uart.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "motor.h"
+   3          #include "string.h"
+   4          #define SIZE 12
+   5          
+   6          sfr AUXR = 0x8E;
+   7          
+   8          char buffer[SIZE];
+   9          
+  10          extern char AT_OK_Flag;
+  11          extern char Client_Connect_Flag;
+  12          
+  13          void UartInit(void)
+  14          {
+  15   1          AUXR = 0x01;
+  16   1          SCON = 0x50; //配置串口工作方式1：REN能接受
+  17   1          TMOD &= 0xF0;
+  18   1          TMOD |= 0x20;//定时器1工作方式8位自动重装
+  19   1          
+  20   1          TH1 = 0xFD;// 
+  21   1          TL1 = 0xFD;//9600波特率
+  22   1          TR1 = 1;//启动定时器
+  23   1          
+  24   1          EA = 1;//开启总中断
+  25   1          ES = 1;//开启串口中断
+  26   1          
+  27   1      }
+  28          
+  29          
+  30          
+  31          
+  32          
+  33          void SendByte (char mydata)
+  34          {
+  35   1          SBUF = mydata;
+  36   1          while(!TI);
+  37   1          TI = 0;
+  38   1      
+  39   1      }
+  40          
+  41          
+  42          void sendString(char* str)
+  43          {
+  44   1          while (*str != '\0') {
+  45   2              SendByte(*str);
+  46   2              str++;          
+  47   2          }
+  48   1      
+  49   1      }
+  50          
+  51          
+  52          
+  53          
+  54          //M1前 M2后 M3左 M4右
+  55          void Uart_Handler() interrupt 4
+C51 COMPILER V9.52.0.0   UART                                                              03/15/2024 16:51:11 PAGE 2   
+
+  56          
+  57          {
+  58   1          static int i = 0;//static 静态变量，被初始化一次，
+  59   1          //在这个函数内相当与全局变量的作用，不会反复被执行初始化，区别是只能�
+             -��这个函数内被调用
+  60   1          char tmp;
+  61   1          
+  62   1          if (RI) {   //中断处理函数中，对于接收中断的响应
+  63   2      
+  64   2                  
+  65   2              RI = 0;//清除接收中断标志位
+  66   2              tmp = SBUF;
+  67   2              if(tmp == 'M' || tmp == 'O' || tmp == '0'){
+  68   3                  i = 0;
+  69   3              }
+  70   2              buffer[i++] = tmp;
+  71   2                      
+  72   2              //连接服务器等OK返回值指令的判断
+  73   2              if(buffer[0] == 'O' && buffer[1] == 'K'){
+  74   3                  AT_OK_Flag  = 1;
+  75   3                  memset(buffer, '\0', SIZE);
+  76   3              }
+  77   2                      
+  78   2              if(buffer[0] == '0' && buffer[2] == 'C'){
+  79   3                  Client_Connect_Flag = 1;
+  80   3                  memset(buffer, '\0', SIZE);
+  81   3              }
+  82   2      
+  83   2      
+  84   2              if (buffer[0] == 'M') {
+  85   3                  switch(buffer[1]) {
+  86   4                      case '1':
+  87   4                          goForward();
+  88   4                          break;
+  89   4                      case '2':
+  90   4                          goBack();
+  91   4                          break;
+  92   4                      case '3':
+  93   4                          goLeft();
+  94   4                          break;
+  95   4                      case '4':
+  96   4                          goRight();
+  97   4                          break;
+  98   4                      default:
+  99   4                          Stop();
+ 100   4                          break;
+ 101   4      
+ 102   4                  }
+ 103   3                      
+ 104   3              }
+ 105   2              
+ 106   2      
+ 107   2          }
+ 108   1              if (i == 12) {
+ 109   2                  memset(buffer, '\0', SIZE);
+ 110   2                  i = 0;
+ 111   2              }
+ 112   1                  
+ 113   1      } 
+ 114              
+ 115          
+
+C51 COMPILER V9.52.0.0   UART                                                              03/15/2024 16:51:11 PAGE 3   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    277    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     14    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

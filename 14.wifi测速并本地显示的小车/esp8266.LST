@@ -1,0 +1,53 @@
+C51 COMPILER V9.52.0.0   ESP8266                                                           03/15/2024 16:51:12 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE ESP8266
+OBJECT MODULE PLACED IN esp8266.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE esp8266.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "uart.h"
+   2          
+   3          //1 工作在路由模式
+   4          code char LYMO[] = "AT+CWMODE=2\r\n";
+   5          //2 使能多链接
+   6          code char DLJ[] = "AT+CIPMUX=1\r\n"; 
+   7          //3 建立TCPServer
+   8          code char JLFW[] = "AT+CIPSERVER=1\r\n"; // default port = 333 
+   9          
+  10          
+  11          
+  12          char AT_OK_Flag = 0;                            //OK返回值的标志位
+  13          char Client_Connect_Flag = 0;
+  14          
+  15          void initWifi_AP()
+  16          {
+  17   1              sendString(LYMO);
+  18   1              while(!AT_OK_Flag);
+  19   1              AT_OK_Flag = 0;
+  20   1              sendString(DLJ);
+  21   1              while(!AT_OK_Flag);
+  22   1              AT_OK_Flag = 0;
+  23   1      }
+  24          
+  25          void waitConnect()
+  26          {
+  27   1              sendString(JLFW);
+  28   1              while(!Client_Connect_Flag);
+  29   1              AT_OK_Flag = 0; 
+  30   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     50    ----
+   CONSTANT SIZE    =     45    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

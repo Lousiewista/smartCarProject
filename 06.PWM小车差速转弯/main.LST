@@ -1,0 +1,63 @@
+C51 COMPILER V9.52.0.0   MAIN                                                              03/12/2024 20:24:08 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "motor.h"
+   3          #include "delay.h"
+   4          #include "uart.h"
+   5          #include "time.h"
+   6          
+   7          extern char leftSpeed;
+   8          extern char rightSpeed;
+   9          
+  10          
+  11          void main(void)
+  12          {
+  13   1          Time0Init();
+  14   1          Time1Init();
+  15   1          //UartInit();
+  16   1          
+  17   1          
+  18   1          
+  19   1          while (1) {
+  20   2              
+  21   2              leftSpeed = 10; //10份全速运行，30份停止，所以慢。20ms是40份的500μs
+  22   2              rightSpeed = 40;
+  23   2              Delay1000ms();
+  24   2              Delay1000ms();
+  25   2              
+  26   2              leftSpeed = 20;
+  27   2              rightSpeed = 20;
+  28   2              Delay1000ms();
+  29   2              Delay1000ms();
+  30   2              
+  31   2              leftSpeed = 40;
+  32   2              rightSpeed = 10;
+  33   2              Delay1000ms();
+  34   2              Delay1000ms();
+  35   2              
+  36   2              
+  37   2              
+  38   2          }
+  39   1      
+  40   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     44    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

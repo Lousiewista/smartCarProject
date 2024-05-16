@@ -1,0 +1,9 @@
+"STARTUP.obj",
+"main.obj",
+"motor.obj",
+"delay.obj",
+"uart.obj",
+"time.obj",
+"OLED.obj" 
+TO "build" 
+RAMSIZE(256) 

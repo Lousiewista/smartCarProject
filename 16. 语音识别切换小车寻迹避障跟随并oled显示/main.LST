@@ -1,0 +1,201 @@
+C51 COMPILER V9.52.0.0   MAIN                                                              03/23/2022 08:31:35 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "hc04.h"
+   3          #include "delay.h"
+   4          #include "sg90.h"
+   5          #include "Oled.h"
+   6          #include "motor.h"
+   7          
+   8          #define MIDDLE 0
+   9          #define LEFT 1
+  10          #define RIGHT 2
+  11          
+  12          #define BZ 1
+  13          #define XJ 2
+  14          #define GS 3
+  15          
+  16          
+  17          sbit A25 = P1^5;
+  18          sbit A26 = P1^6;
+  19          sbit A27 = P1^7;
+  20          
+  21          sbit leftSensorX = P2^7;
+  22          sbit rightSensorX = P2^6;
+  23          
+  24          sbit leftSensorG = P2^5;
+  25          sbit rightSensorG = P2^4;
+  26          
+  27          char dir;
+  28            
+  29          double disMiddle;
+  30          double disLeft;
+  31          double disRight;
+  32          
+  33          void xunjiMode()
+  34          {
+  35   1          if(leftSensorX == 0 && rightSensorX == 0){
+  36   2            goForward();
+  37   2          }
+  38   1          if(leftSensorX == 1 && rightSensorX == 0){
+  39   2            goLeft();
+  40   2          }
+  41   1          
+  42   1          if(leftSensorX == 0 && rightSensorX == 1){
+  43   2            goRight();
+  44   2          }
+  45   1          
+  46   1          if(leftSensorX == 1 && rightSensorX == 1){
+  47   2            //停
+  48   2            stop();
+  49   2          }
+  50   1      }
+  51          
+  52          void gensuiMode()
+  53          {
+  54   1          if(leftSensorG == 0 && rightSensorG == 0){
+  55   2            goForward();
+C51 COMPILER V9.52.0.0   MAIN                                                              03/23/2022 08:31:35 PAGE 2   
+
+  56   2          }
+  57   1          if(leftSensorG == 1 && rightSensorG == 0){
+  58   2            goRight();
+  59   2          }
+  60   1          
+  61   1          if(leftSensorG == 0 && rightSensorG == 1){
+  62   2            
+  63   2            goLeft();
+  64   2          }
+  65   1          
+  66   1          if(leftSensorG == 1 && rightSensorG == 1){
+  67   2            //停
+  68   2            stop();
+  69   2          }
+  70   1      }
+  71          
+  72          void bizhangMode()
+  73          {
+  74   1        if(dir != MIDDLE){
+  75   2            sgMiddle();
+  76   2            dir = MIDDLE;
+  77   2            Delay300ms();
+  78   2          }
+  79   1          disMiddle = get_distance();
+  80   1          
+  81   1          if(disMiddle > 35){
+  82   2            //前进
+  83   2            goForward();
+  84   2          }else if(disMiddle < 10){
+  85   2            goBack();
+  86   2            
+  87   2          }else
+  88   1          {
+  89   2            //停止
+  90   2            stop();
+  91   2            //测左边距离
+  92   2            sgLeft();
+  93   2            Delay300ms();
+  94   2            disLeft = get_distance();
+  95   2            
+  96   2            sgMiddle();
+  97   2            Delay300ms();
+  98   2            
+  99   2            sgRight();
+ 100   2            dir = RIGHT;
+ 101   2            Delay300ms();
+ 102   2            disRight = get_distance();
+ 103   2            
+ 104   2            if(disLeft < disRight){
+ 105   3              goRight();
+ 106   3              Delay150ms();
+ 107   3              stop();
+ 108   3            }
+ 109   2            if(disRight < disLeft){
+ 110   3              goLeft();
+ 111   3              Delay150ms();
+ 112   3              stop();
+ 113   3            }
+ 114   2          }
+ 115   1      
+ 116   1      }
+ 117          
+C51 COMPILER V9.52.0.0   MAIN                                                              03/23/2022 08:31:35 PAGE 3   
+
+ 118          void main()
+ 119          {
+ 120   1      
+ 121   1        int mark = 0;
+ 122   1        
+ 123   1        Time0Init();
+ 124   1        Time1Init();
+ 125   1        //舵机的初始位置
+ 126   1      
+ 127   1        sgMiddle();
+ 128   1        Delay300ms();
+ 129   1        Delay300ms();
+ 130   1        dir = MIDDLE;
+ 131   1        
+ 132   1        Oled_Init();
+ 133   1        Oled_Clear();
+ 134   1        Oled_Show_Str(2,2,"-----Ready----");
+ 135   1        
+ 136   1        while(1){
+ 137   2          //满足寻迹模式的条件
+ 138   2          if(A25 == 0 && A26 == 1 && A27 == 1){
+ 139   3            if(mark != XJ){
+ 140   4              Oled_Clear();
+ 141   4              Oled_Show_Str(2,2,"-----XunJi----");
+ 142   4            }
+ 143   3            mark = XJ;
+ 144   3            xunjiMode();
+ 145   3          }
+ 146   2          //满足跟随模式的条件
+ 147   2          if(A25 == 1 && A26 == 0 && A27 == 1){
+ 148   3            if(mark != GS){
+ 149   4              Oled_Clear();
+ 150   4              Oled_Show_Str(2,2,"-----GenSui----");
+ 151   4            }
+ 152   3            mark = GS;
+ 153   3            gensuiMode();
+ 154   3          }
+ 155   2          //满足避障模式的条件
+ 156   2          if(A25 == 1 && A26 == 1 && A27 == 0){
+ 157   3            if(mark != BZ){
+ 158   4              Oled_Clear();
+ 159   4              Oled_Show_Str(2,2,"-----BiZhang----");
+ 160   4            }
+ 161   3            mark = BZ;
+ 162   3            bizhangMode();
+ 163   3          }
+ 164   2        
+ 165   2        }
+ 166   1      }
+ 167          
+ 168          
+ 169          
+ 170          
+ 171          
+ 172          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    415    ----
+   CONSTANT SIZE    =     63    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+C51 COMPILER V9.52.0.0   MAIN                                                              03/23/2022 08:31:35 PAGE 4   
+
+   DATA SIZE        =     13       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,75 @@
+C51 COMPILER V9.52.0.0   HC04                                                              03/14/2024 11:29:45 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE HC04
+OBJECT MODULE PLACED IN hc04.OBJ
+COMPILER INVOKED BY: D:\Program Files (x86)\Keil\C51\BIN\C51.EXE hc04.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "delay.h"
+   3          
+   4          sbit Trig = P2^3;
+   5          sbit Echo = P2^2;
+   6          
+   7          
+   8          
+   9          void Time1Init()
+  10          {
+  11   1          TMOD &= 0x0F; //设定定时器模式
+  12   1          TMOD |= 0X10;
+  13   1          TH1 = 0;
+  14   1          TL1 = 0;
+  15   1          //设置定时器0工作模式1，初始值设定0开始数数，不着急启动定时器
+  16   1      }
+  17          
+  18          
+  19          void startHC()
+  20          {
+  21   1          Trig = 0;
+  22   1          Trig = 1;
+  23   1          Delay10us();
+  24   1          Trig =0;
+  25   1      }
+  26          
+  27          
+  28          
+  29          double get_distance()
+  30          {
+  31   1          double time;
+  32   1          
+  33   1          TH1 = 0;
+  34   1          TL1 = 0;
+  35   1          
+  36   1          Delay30ms();
+  37   1          startHC();
+  38   1              
+  39   1          while (Echo == 0); 
+  40   1          TR1 = 1;
+  41   1              
+  42   1          while (Echo == 1);   
+  43   1          TR1 = 0;
+  44   1                   
+  45   1          time = (TH1 * 256 + TL1) * 1.085;  
+  46   1              
+  47   1          return (time * 0.017);
+  48   1      }
+  49          
+  50          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    100    ----
+   CONSTANT SIZE    =   ----    ----
+C51 COMPILER V9.52.0.0   HC04                                                              03/14/2024 11:29:45 PAGE 2   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
